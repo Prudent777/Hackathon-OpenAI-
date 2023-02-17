@@ -1,270 +1,91 @@
-# OpenAI Python Library
+# Samples, Reference Architectures & Best Practices
 
-The OpenAI Python library provides convenient access to the OpenAI API
-from applications written in the Python language. It includes a
-pre-defined set of classes for API resources that initialize
-themselves dynamically from API responses which makes it compatible
-with a wide range of versions of the OpenAI API.
+This repository is meant to organize Microsoft's Open Source AI based repositories.
 
-You can find usage examples for the OpenAI Python library in our [API reference](https://beta.openai.com/docs/api-reference?lang=python) and the [OpenAI Cookbook](https://github.com/openai/openai-cookbook/).
+# Keywords
+batch scoring, realtime scoring, model training, MLOps, Azure Machine Learning, computer vision, natural language processing, recommenders
 
-## Installation
+## Table of contents
+1. [Getting Started](#Getting-Started)
+2. [AI100 - Samples](#ai100)
+3. [AI200 - Reference Architectures](#ai200)
+4. [AI300 - Best Practices](#ai300)
+6. [Contributing](#Contributing)
 
-You don't need this source code unless you want to modify the package. If you just
-want to use the package, just run:
-
-```sh
-pip install --upgrade openai
-```
-
-Install from source with:
-
-```sh
-python setup.py install
-```
-
-### Optional dependencies
-
-Install dependencies for [`openai.embeddings_utils`](openai/embeddings_utils.py):
-
-```sh
-pip install openai[embeddings]
-```
-
-Install support for [Weights & Biases](https://wandb.me/openai-docs):
-
-```
-pip install openai[wandb]
-```
-
-Data libraries like `numpy` and `pandas` are not installed by default due to their size. They’re needed for some functionality of this library, but generally not for talking to the API. If you encounter a `MissingDependencyError`, install them with:
-
-```sh
-pip install openai[datalib]
-````
-
-## Usage
-
-The library needs to be configured with your account's secret key which is available on the [website](https://beta.openai.com/account/api-keys). Either set it as the `OPENAI_API_KEY` environment variable before using the library:
+# Getting Started <a name="Getting-Started"></a>
+This repository is arranged as submodules so you can either pull all the tutorials or simply the ones you want. 
+To pull all the tutorials run:
 
 ```bash
-export OPENAI_API_KEY='sk-...'
+git clone --recurse-submodules https://github.com/microsoft/ai
 ```
 
-Or set `openai.api_key` to its value:
-
-```python
-import openai
-openai.api_key = "sk-..."
-
-# list engines
-engines = openai.Engine.list()
-
-# print the first engine's id
-print(engines.data[0].id)
-
-# create a completion
-completion = openai.Completion.create(engine="ada", prompt="Hello world")
-
-# print the completion
-print(completion.choices[0].text)
-```
-
-
-### Params
-All endpoints have a `.create` method that supports a `request_timeout` param.  This param takes a `Union[float, Tuple[float, float]]` and will raise an `openai.error.TimeoutError` error if the request exceeds that time in seconds (See: https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts).
-
-### Microsoft Azure Endpoints
-
-In order to use the library with Microsoft Azure endpoints, you need to set the `api_type`, `api_base` and `api_version` in addition to the `api_key`. The `api_type` must be set to 'azure' and the others correspond to the properties of your endpoint.
-In addition, the deployment name must be passed as the engine parameter.
-
-```python
-import openai
-openai.api_type = "azure"
-openai.api_key = "..."
-openai.api_base = "https://example-endpoint.openai.azure.com"
-openai.api_version = "2022-12-01"
-
-# create a completion
-completion = openai.Completion.create(engine="deployment-name", prompt="Hello world")
-
-# print the completion
-print(completion.choices[0].text)
-```
-
-Please note that for the moment, the Microsoft Azure endpoints can only be used for completion, embedding, and fine-tuning operations.
-For a detailed example of how to use fine-tuning and other operations using Azure endpoints, please check out the following Jupyter notebooks:
-* [Using Azure completions](https://github.com/openai/openai-cookbook/tree/main/examples/azure/completions.ipynb)
-* [Using Azure fine-tuning](https://github.com/openai/openai-cookbook/tree/main/examples/azure/finetuning.ipynb)
-* [Using Azure embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/azure/embeddings.ipynb)
-
-### Microsoft Azure Active Directory Authentication
-
-In order to use Microsoft Active Directory to authenticate to your Azure endpoint, you need to set the `api_type` to "azure_ad" and pass the acquired credential token to `api_key`. The rest of the parameters need to be set as specified in the previous section.
-
-
-```python
-from azure.identity import DefaultAzureCredential
-import openai
-
-# Request credential
-default_credential = DefaultAzureCredential()
-token = default_credential.get_token("https://cognitiveservices.azure.com/.default")
-
-# Setup parameters
-openai.api_type = "azure_ad"
-openai.api_key = token.token
-openai.api_base = "https://example-endpoint.openai.azure.com/"
-openai.api_version = "2022-12-01"
-
-# ...
-```
-### Command-line interface
-
-This library additionally provides an `openai` command-line utility
-which makes it easy to interact with the API from your terminal. Run
-`openai api -h` for usage.
-
-```sh
-# list engines
-openai api engines.list
-
-# create a completion
-openai api completions.create -e ada -p "Hello world"
-
-# generate images via DALL·E API
-openai api image.create -p "two dogs playing chess, cartoon" -n 1
-```
-
-## Example code
-
-Examples of how to use this Python library to accomplish various tasks can be found in the [OpenAI Cookbook](https://github.com/openai/openai-cookbook/). It contains code examples for:
-
-* Classification using fine-tuning
-* Clustering
-* Code search
-* Customizing embeddings
-* Question answering from a corpus of documents
-* Recommendations
-* Visualization of embeddings
-* And more
-
-Prior to July 2022, this OpenAI Python library hosted code examples in its examples folder, but since then all examples have been migrated to the [OpenAI Cookbook](https://github.com/openai/openai-cookbook/).
-
-### Embeddings
-
-In the OpenAI Python library, an embedding represents a text string as a fixed-length vector of floating point numbers. Embeddings are designed to measure the similarity or relevance between text strings.
-
-To get an embedding for a text string, you can use the embeddings method as follows in Python:
-
-```python
-import openai
-openai.api_key = "sk-..."  # supply your API key however you choose
-
-# choose text to embed
-text_string = "sample text"
-
-# choose an embedding
-model_id = "text-similarity-davinci-001"
-
-# compute the embedding of the text
-embedding = openai.Embedding.create(input=text_string, engine=model_id)['data'][0]['embedding']
-```
-
-An example of how to call the embeddings method is shown in this [get embeddings notebook](https://github.com/openai/openai-cookbook/blob/main/examples/Get_embeddings.ipynb).
-
-Examples of how to use embeddings are shared in the following Jupyter notebooks:
-
-- [Classification using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Classification_using_embeddings.ipynb)
-- [Clustering using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Clustering.ipynb)
-- [Code search using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Code_search.ipynb)
-- [Semantic text search using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Semantic_text_search_using_embeddings.ipynb)
-- [User and product embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/User_and_product_embeddings.ipynb)
-- [Zero-shot classification using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Zero-shot_classification_with_embeddings.ipynb)
-- [Recommendation using embeddings](https://github.com/openai/openai-cookbook/blob/main/examples/Recommendation_using_embeddings.ipynb)
-
-For more information on embeddings and the types of embeddings OpenAI offers, read the [embeddings guide](https://beta.openai.com/docs/guides/embeddings) in the OpenAI documentation.
-
-### Fine-tuning
-
-Fine-tuning a model on training data can both improve the results (by giving the model more examples to learn from) and reduce the cost/latency of API calls (chiefly through reducing the need to include training examples in prompts).
-
-Examples of fine-tuning are shared in the following Jupyter notebooks:
-
-- [Classification with fine-tuning](https://github.com/openai/openai-cookbook/blob/main/examples/Fine-tuned_classification.ipynb) (a simple notebook that shows the steps required for fine-tuning)
-- Fine-tuning a model that answers questions about the 2020 Olympics
-  - [Step 1: Collecting data](https://github.com/openai/openai-cookbook/blob/main/examples/fine-tuned_qa/olympics-1-collect-data.ipynb)
-  - [Step 2: Creating a synthetic Q&A dataset](https://github.com/openai/openai-cookbook/blob/main/examples/fine-tuned_qa/olympics-2-create-qa.ipynb)
-  - [Step 3: Train a fine-tuning model specialized for Q&A](https://github.com/openai/openai-cookbook/blob/main/examples/fine-tuned_qa/olympics-3-train-qa.ipynb)
-
-Sync your fine-tunes to [Weights & Biases](https://wandb.me/openai-docs) to track experiments, models, and datasets in your central dashboard with:
+if you have git older than 2.13 run:
 
 ```bash
-openai wandb sync
+git clone --recursive https://github.com/microsoft/ai.git
 ```
 
-For more information on fine-tuning, read the [fine-tuning guide](https://beta.openai.com/docs/guides/fine-tuning) in the OpenAI documentation.
-
-### Moderation
-
-OpenAI provides a Moderation endpoint that can be used to check whether content complies with the OpenAI [content policy](https://beta.openai.com/docs/usage-policies)
-
-```python
-import openai
-openai.api_key = "sk-..."  # supply your API key however you choose
-
-moderation_resp = openai.Moderation.create(input="Here is some perfectly innocuous text that follows all OpenAI content policies.")
+To pull a single submodule (e.g. DeployDeepModelKubernetes) run:
 ```
-
-See the [moderation guide](https://beta.openai.com/docs/guides/moderation) for more details.
-
-## Image generation (DALL·E)
-
-```python
-import openai
-openai.api_key = "sk-..."  # supply your API key however you choose
-
-image_resp = openai.Image.create(prompt="two dogs playing chess, oil painting", n=4, size="512x512")
-
+git clone https://github.com/microsoft/ai
+cd ai
+git submodule init submodules/DeployDeepModelKubernetes
+git submodule update
 ```
+# [AI100 - Samples](https://azure.microsoft.com/en-us/overview/ai-platform/)<a name="ai100"></a>
+Samples are a collection of open source Python repositories created by the Microsoft product teams, which focus on AI services.  
 
-## Async API
+| Title | Description | 
+|-------|-------------|
+| [Azure ML Python SDK](https://github.com/Azure/MachineLearningNotebooks)|Python notebooks with ML and deep learning examples with Azure Machine Learning|
+| [Azure Cognitive Services Python SDK](https://github.com/Azure-Samples/cognitive-services-python-sdk-samples)|Learn how to use the Cognitive Services Python SDK with these samples |
+| [Azure Intelligent Kiosk](https://github.com/microsoft/Cognitive-Samples-IntelligentKiosk)|Here you will find several demos showcasing workflows and experiences built on top of the Microsoft Cognitive Services.|
+| [MML Spark Samples](https://github.com/Azure/mmlspark/tree/master/notebooks/samples)|MMLSpark is an ecosystem of tools aimed towards expanding the distributed computing framework Apache Spark in several new directions.|
+| [Seismic Deep Learning Samples](https://github.com/microsoft/seismic-deeplearning/)|Deep Learning for Seismic Imaging and Interpretation.|
 
-Async support is available in the API by prepending `a` to a network-bound method:
+# [AI200 - Reference Architectures](https://docs.microsoft.com/en-us/azure/architecture/data-guide/big-data/machine-learning-at-scale) <a name="ai200"></a>
+Our reference architectures are arranged by scenario. Each architecture includes open source practices, along with considerations for scalability, availability, manageability, and security.
 
-```python
-import openai
-openai.api_key = "sk-..."  # supply your API key however you choose
+| Title                                     | Language | Environment | Design | Description                                                                       | Status                                                                                                                                                                                                                                                                                                              |
+|----------------------------------------------|-------------|-------------|-------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Deploy Classic ML Model on Kubernetes](https://github.com/microsoft/MLAKSDeployAML)       						   | Python | CPU  | Real-Time Scoring| Train LightGBM model locally using Azure ML, deploy on Kubernetes or IoT Edge for _real-time_ scoring                         | [![Build Status](https://dev.azure.com/AZGlobal/Azure%20Global%20CAT%20Engineering/_apis/build/status/AI%20CAT/Python-ML-RealTimeServing?branchName=master)](https://dev.azure.com/AZGlobal/Azure%20Global%20CAT%20Engineering/_build/latest?definitionId=21&branchName=master)
+| [Deploy Deep Learning Model on Kubernetes](https://github.com/microsoft/AKSDeploymentTutorialAML)    				   | Python | Keras | Real-Time Scoring| Deploy image classification model on Kubernetes or IoT Edge for _real-time_ scoring using Azure ML             | [![Build Status](https://dev.azure.com/AZGlobal/Azure%20Global%20CAT%20Engineering/_apis/build/status/AI%20CAT/Python-Keras-RealTimeServing?branchName=master)](https://dev.azure.com/AZGlobal/Azure%20Global%20CAT%20Engineering/_build/latest?definitionId=17&branchName=master)
+| [Hyperparameter Tuning of Classical ML Models](https://github.com/Microsoft/MLHyperparameterTuning) 				   | Python | CPU  | Training | Train LightGBM model locally and run Hyperparameter tuning using Hyperdrive in Azure ML                            | ![](https://dev.azure.com/customai/MLHyperparameterTuningPipeline/_apis/build/status/Microsoft.MLHyperparameterTuning?branchName=master)                                                                                                                                                                            |
+| [Deploy Deep Learning Model on Pipelines](https://github.com/Azure/Batch-Scoring-Deep-Learning-Models-With-AML)      | Python | GPU  | Batch Scoring | Deploy PyTorch style transfer model for _batch_ scoring using Azure ML Pipelines            | [![Build Status](https://dev.azure.com/customai/BatchScoringDeepLearningModelsWithAMLPipeline/_apis/build/status/Azure.Batch-Scoring-Deep-Learning-Models-With-AML?branchName=master)](https://dev.azure.com/customai/BatchScoringDeepLearningModelsWithAMLPipeline/_build/latest?definitionId=9&branchName=master) |
+| [Deploy Classic ML Model on Pipelines](https://github.com/Microsoft/AMLBatchScoringPipeline)         				   | Python | CPU  | Batch Scoring | Deploy one-class SVM for _batch_ scoring anomaly detection using Azure ML Pipelines | ![](https://dev.azure.com/customai/AMLBatchScoringPipeline/_apis/build/status/Microsoft.AMLBatchScoringPipeline?branchName=master)                                                                                                                                                                                  |
+| [Deploy R ML Model on Kubernetes](https://github.com/Azure/RealtimeRDeployment)         							   | R | CPU | Real-Time Scoring       | Deploy ML model for _real-time_ scoring on Kubernetes |  |
+| [Deploy R ML Model on Batch](https://github.com/Azure/RBatchScoring)         										   | R | CPU  | Scoring     | Deploy forecasting model for _batch_ scoring using Azure Batch and doAzureParallel |  | 
+| [Deploy Spark ML Model on Databricks](https://github.com/Azure/BatchSparkScoringPredictiveMaintenance)         	   | Python | Spark  | Batch Scoring | Deploy a classification model for _batch_ scoring using Databricks |                                                                                                                                                                                 |
+| [Train Distributed Deep Leaning Model](https://github.com/Azure/DistributedDeepLearning/)         				   | Python | GPU  | Training | Distributed training of ResNet50 model using Batch AI |                                                                                                                                                                                  |
 
-async def create_completion():
-    completion_resp = await openai.Completion.acreate(prompt="This is a test", engine="davinci")
+# AI300 - Best Practices <a name="ai300"></a>
+Our best practices are arranged by topic. Each best pratice repository includes open source methods, along with considerations for scalability, availability, manageability, and security.
 
-```
+| Title | Description | 
+|-------|-------------|
+|[Computer Vision](https://github.com/microsoft/computervision)| Accelerate the development of computer vision applications with examples and best practice guidelines for building computer vision systems
+|[Natural Language Processing](https://github.com/microsoft/nlp)|State-of-the-art methods and common scenarios that are popular among researchers and practitioners working on problems involving text and language.|
+|[Recommenders](https://github.com/microsoft/recommenders)| Examples and best practices for building recommendation systems, provided as Jupyter notebooks.| 
+|[MLOps](https://github.com/microsoft/MLOps)| MLOps empowers data scientists and app developers to help bring ML models to production. |
 
-To make async requests more efficient, you can pass in your own
-``aiohttp.ClientSession``, but you must manually close the client session at the end 
-of your program/event loop:
 
-```python
-import openai
-from aiohttp import ClientSession
+## Recommend a Scenario
+If there is a particular scenario you are interested in seeing a tutorial for please fill in a [scenario suggestion](https://github.com/Microsoft/AIReferenceArchitectures/issues/new?assignees=&labels=&template=scenario_request.md&title=%5BSCENARIO%5D)
 
-openai.aiosession.set(ClientSession())
-# At the end of your program, close the http session
-await openai.aiosession.get().close()
-```
+## Ongoing Work
+We are constantly developing interesting AI reference architectures using Microsoft AI Platform. Some of the ongoing projects include IoT Edge scenarios, model scoring on mobile devices, add more... To follow the progress and any new reference architectures, please go to the AI section of this [link](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/).
 
-See the [usage guide](https://beta.openai.com/docs/guides/images) for more details.
+# Contributing <a name="Contributing"></a>
 
-## Requirements
+This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
+the rights to use your contribution. For details, visit https://cla.microsoft.com.
 
-- Python 3.7.1+
+When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
+a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
+provided by the bot. You will only need to do this once across all repos using our CLA.
 
-In general, we want to support the versions of Python that our
-customers are using. If you run into problems with any version
-issues, please let us know at on our [support page](https://help.openai.com/en/).
-
-## Credit
-
-This library is forked from the [Stripe Python Library](https://github.com/stripe/stripe-python).
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
