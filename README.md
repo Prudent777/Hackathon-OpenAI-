@@ -25,7 +25,7 @@ if you have git older than 2.13 run:
 ```bash
 git clone --recursive https://github.com/microsoft/ai.git
 ```
-
+from setuptools import setup
 To pull a single submodule (e.g. DeployDeepModelKubernetes) run:
 ```
 git clone https://github.com/microsoft/ai
